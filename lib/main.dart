@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Insani Frontend',
+      title: 'INSANI',
       theme: ThemeData(
         useMaterial3: true,
         primaryColor: const Color(0xFF457B42),
