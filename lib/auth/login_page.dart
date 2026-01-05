@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../core/app_colors.dart';
 import 'register_page.dart';
 import '../home/hrd_home.dart';
@@ -47,53 +49,44 @@ class _LoginPageState extends State<LoginPage> {
         },
       );
 
-      if (response.statusCode != 200) {
-        throw Exception("Server error: ${response.statusCode}");
-      }
-
       final result = jsonDecode(response.body);
-      print(result);
+
       if (result['status'] == true) {
         final data = result['data'];
 
-        String role = data['role'].toString().trim();
-        print('ROLE = [$role]');
+        /// ===== AMBIL DATA LOGIN =====
+        String kdPeg = data['kd_peg'].toString();
+        String role = data['role'].toString();
+        String username = data['username'].toString();
+
+        /// ===== SIMPAN KE LOCAL =====
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('kd_peg', kdPeg);
+        await prefs.setString('role', role);
+        await prefs.setString('username', username);
 
         if (!mounted) return;
-        if (role == '1') {
+
+        /// ===== ARAHKAN SESUAI ROLE =====
+        if (role == '1' || role.toUpperCase() == 'PEGAWAI') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const PegawaiHome()),
           );
-        } else if (role == '2') {
+        } else if (role == '2' || role.toUpperCase() == 'HRD') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const HrdHome()),
           );
-        } else if (role == '3') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const TuHome()),
-          );
-        } else if (role.toUpperCase() == 'PEGAWAI') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const PegawaiHome()),
-          );
-        } else if (role.toUpperCase() == 'HRD') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const HrdHome()),
-          );
-        } else if (role.toUpperCase() == 'TU') {
+        } else if (role == '3' || role.toUpperCase() == 'TU') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const TuHome()),
           );
         } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Role tidak dikenali: $role")));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Role tidak dikenali: $role")),
+          );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -101,9 +94,9 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Gagal login: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Gagal login: $e")),
+      );
     } finally {
       if (mounted) setState(() => isLoading = false);
     }

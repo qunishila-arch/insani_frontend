@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../cuti/order_cuti.dart';
 
 class PegawaiHome extends StatelessWidget {
   const PegawaiHome({super.key});
@@ -42,6 +43,7 @@ class PegawaiHome extends StatelessWidget {
             ),
 
             const SizedBox(height: 16),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
@@ -72,6 +74,7 @@ class PegawaiHome extends StatelessWidget {
             ),
 
             const SizedBox(height: 30),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Column(
@@ -79,9 +82,18 @@ class PegawaiHome extends StatelessWidget {
                   _menuButton(
                     icon: Icons.edit_document,
                     title: 'Order Cuti',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const OrderCutiPage(),
+                        ),
+                      );
+                    },
                   ),
+
                   const SizedBox(height: 20),
+
                   _menuButton(
                     icon: Icons.bookmark_border,
                     title: 'Surat',
@@ -93,6 +105,7 @@ class PegawaiHome extends StatelessWidget {
             ),
 
             const Spacer(),
+
             const Padding(
               padding: EdgeInsets.only(bottom: 10),
               child: Text(
@@ -130,10 +143,7 @@ class PegawaiHome extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
