@@ -4,7 +4,9 @@ import 'dart:convert';
 import 'list_order_cuti.dart';
 
 class OrderCutiPage extends StatefulWidget {
-  const OrderCutiPage({super.key});
+  final String kdPeg;
+
+  const OrderCutiPage({super.key, required this.kdPeg});
 
   @override
   State<OrderCutiPage> createState() => _OrderCutiPageState();
@@ -34,6 +36,7 @@ class _OrderCutiPageState extends State<OrderCutiPage> {
     super.dispose();
   }
 
+  /// ================= FETCH JENIS CUTI =================
   Future<void> fetchJenisCuti() async {
     try {
       final response = await http.get(
@@ -78,8 +81,7 @@ class _OrderCutiPageState extends State<OrderCutiPage> {
     setState(() => isLoading = true);
 
     final body = {
-      "action": "submit",
-      "kd_peg": "PEG000002",
+      "kd_peg": widget.kdPeg,
       "kd_jenis_cuti": selectedCuti!,
       "tgl_mulai": tglMulaiController.text,
       "tgl_selesai": tglSelesaiController.text,
@@ -88,12 +90,17 @@ class _OrderCutiPageState extends State<OrderCutiPage> {
 
     try {
       final response = await http.post(
-        Uri.parse("http://192.168.43.87/insani/API/cuti.php"),
+        Uri.parse("http://192.168.43.87/insani/API/cuti.php?action=submit"),
         body: body,
       );
 
-      final result = jsonDecode(response.body);
+      if (response.statusCode != 200) {
+        setState(() => isLoading = false);
+        _notif("Server error ${response.statusCode}");
+        return;
+      }
 
+      final result = jsonDecode(response.body);
       setState(() => isLoading = false);
 
       _notif(result['message']);
@@ -102,7 +109,7 @@ class _OrderCutiPageState extends State<OrderCutiPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => const ListOrderCutiPage(kdPeg: "PEG000002"),
+            builder: (_) => ListOrderCutiPage(kdPeg: widget.kdPeg),
           ),
         );
       }
@@ -119,55 +126,118 @@ class _OrderCutiPageState extends State<OrderCutiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Form Pengajuan Cuti")),
-      body: Padding(
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        title: const Text("Form Pengajuan Cuti"),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 1,
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            DropdownButtonFormField<String>(
-              value: selectedCuti,
-              decoration: const InputDecoration(labelText: "Jenis Cuti"),
-              items: jenisCutiList.map<DropdownMenuItem<String>>((
-                Map<String, dynamic> e,
-              ) {
-                return DropdownMenuItem<String>(
-                  value: e['fs_kd_jenis_cuti'].toString(),
-                  child: Text(e['fs_nm_jenis_cuti'].toString()),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  selectedCuti = value;
-                });
-              },
+        child: Card(
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Data Pengajuan Cuti",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+
+                DropdownButtonFormField<String>(
+                  value: selectedCuti,
+                  decoration: InputDecoration(
+                    labelText: "Jenis Cuti",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  items: jenisCutiList.map((e) {
+                    return DropdownMenuItem<String>(
+                      value: e['fs_kd_jenis_cuti'].toString(),
+                      child: Text(e['fs_nm_jenis_cuti'].toString()),
+                    );
+                  }).toList(),
+                  onChanged: (value) => setState(() => selectedCuti = value),
+                ),
+
+                const SizedBox(height: 14),
+
+                TextField(
+                  controller: tglMulaiController,
+                  readOnly: true,
+                  onTap: () => pickDate(tglMulaiController),
+                  decoration: InputDecoration(
+                    labelText: "Tanggal Mulai",
+                    suffixIcon: const Icon(Icons.date_range),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                TextField(
+                  controller: tglSelesaiController,
+                  readOnly: true,
+                  onTap: () => pickDate(tglSelesaiController),
+                  decoration: InputDecoration(
+                    labelText: "Tanggal Selesai",
+                    suffixIcon: const Icon(Icons.date_range),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                TextField(
+                  controller: keteranganController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: "Keterangan",
+                    alignLabelWithHint: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : submitCuti,
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            "AJUKAN CUTI",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: tglMulaiController,
-              readOnly: true,
-              onTap: () => pickDate(tglMulaiController),
-              decoration: const InputDecoration(labelText: "Tanggal Mulai"),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: tglSelesaiController,
-              readOnly: true,
-              onTap: () => pickDate(tglSelesaiController),
-              decoration: const InputDecoration(labelText: "Tanggal Selesai"),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: keteranganController,
-              decoration: const InputDecoration(labelText: "Keterangan"),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: isLoading ? null : submitCuti,
-              child: isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text("SUBMIT"),
-            ),
-          ],
+          ),
         ),
       ),
     );

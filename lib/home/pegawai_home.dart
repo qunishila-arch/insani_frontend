@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../cuti/order_cuti.dart';
+import '../cuti/list_order_cuti.dart';
 
 class PegawaiHome extends StatelessWidget {
-  const PegawaiHome({super.key});
+  final String kdPeg;
+
+  const PegawaiHome({super.key, required this.kdPeg});
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +37,6 @@ class PegawaiHome extends StatelessWidget {
                 ],
               ),
             ),
-
             Image.asset(
               'assets/rsi.jpeg',
               width: double.infinity,
@@ -86,7 +88,21 @@ class PegawaiHome extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const OrderCutiPage(),
+                          builder: (_) => OrderCutiPage(kdPeg: kdPeg),
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+                  _menuButton(
+                    icon: Icons.list_alt,
+                    title: 'List Order Cuti',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ListOrderCutiPage(kdPeg: kdPeg),
                         ),
                       );
                     },
@@ -105,7 +121,6 @@ class PegawaiHome extends StatelessWidget {
             ),
 
             const Spacer(),
-
             const Padding(
               padding: EdgeInsets.only(bottom: 10),
               child: Text(
@@ -143,7 +158,10 @@ class PegawaiHome extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   title,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),

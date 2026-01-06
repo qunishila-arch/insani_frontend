@@ -54,12 +54,10 @@ class _LoginPageState extends State<LoginPage> {
       if (result['status'] == true) {
         final data = result['data'];
 
-        /// ===== AMBIL DATA LOGIN =====
         String kdPeg = data['kd_peg'].toString();
         String role = data['role'].toString();
         String username = data['username'].toString();
 
-        /// ===== SIMPAN KE LOCAL =====
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('kd_peg', kdPeg);
         await prefs.setString('role', role);
@@ -67,11 +65,12 @@ class _LoginPageState extends State<LoginPage> {
 
         if (!mounted) return;
 
-        /// ===== ARAHKAN SESUAI ROLE =====
         if (role == '1' || role.toUpperCase() == 'PEGAWAI') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const PegawaiHome()),
+            MaterialPageRoute(
+              builder: (_) => PegawaiHome(kdPeg: data['kd_peg']),
+            ),
           );
         } else if (role == '2' || role.toUpperCase() == 'HRD') {
           Navigator.pushReplacement(
@@ -84,9 +83,9 @@ class _LoginPageState extends State<LoginPage> {
             MaterialPageRoute(builder: (_) => const TuHome()),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Role tidak dikenali: $role")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Role tidak dikenali: $role")));
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -94,9 +93,9 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal login: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal login: $e")));
     } finally {
       if (mounted) setState(() => isLoading = false);
     }

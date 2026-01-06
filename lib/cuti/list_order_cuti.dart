@@ -12,8 +12,8 @@ class ListOrderCutiPage extends StatefulWidget {
 }
 
 class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
-  List cutiList = [];
   bool isLoading = true;
+  List listCuti = [];
 
   @override
   void initState() {
@@ -21,61 +21,51 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
     fetchCuti();
   }
 
-  // Helper untuk menghindari null
-  String safeString(dynamic value, [String fallback = '-']) {
-    if (value == null) return fallback;
-    return value.toString();
-  }
-
   Future<void> fetchCuti() async {
-    setState(() => isLoading = true);
-
     try {
       final response = await http.get(
         Uri.parse(
-          "http://192.168.43.87/insani/API/cuti.php?action=jenis_cuti",
+          "http://192.168.43.87/insani/API/cuti.php?action=list&kd_peg=${widget.kdPeg}",
         ),
       );
 
-      if (response.statusCode == 200) {
-        final result = jsonDecode(response.body);
+      final result = json.decode(response.body);
 
-        if (result['status'] == true) {
-          setState(() {
-            cutiList = result['data'] ?? [];
-            isLoading = false;
-          });
-        } else {
-          setState(() => isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result['message'] ?? "Gagal mengambil data"),
-            ),
-          );
-        }
+      if (result['status'] == true) {
+        setState(() {
+          listCuti = result['data'];
+          isLoading = false;
+        });
       } else {
-        setState(() => isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error ${response.statusCode}")),
-        );
+        setState(() {
+          listCuti = [];
+          isLoading = false;
+        });
       }
     } catch (e) {
-      setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Gagal mengambil data cuti")),
-      );
-      print("Error fetchCuti: $e");
+      isLoading = false;
     }
   }
 
-  Color statusColor(String? status) {
+  String statusText(String status) {
     switch (status) {
       case 'APPROVED':
-        return Colors.blue;
-      case 'VERIFIED':
+        return 'Disetujui';
+      case 'REJECTED':
+        return 'Ditolak';
+      case 'PENDING':
+      default:
+        return 'Belum Disetujui';
+    }
+  }
+
+  Color statusColor(String status) {
+    switch (status) {
+      case 'APPROVED':
         return Colors.green;
       case 'REJECTED':
         return Colors.red;
+      case 'PENDING':
       default:
         return Colors.orange;
     }
@@ -84,89 +74,44 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text("Pengajuan Cuti Saya"),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text("Riwayat Order Cuti")),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : cutiList.isEmpty
-              ? const Center(child: Text("Belum ada pengajuan cuti"))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: cutiList.length,
-                  itemBuilder: (context, index) {
-                    final item = cutiList[index];
+          : listCuti.isEmpty
+          ? const Center(child: Text("Belum ada pengajuan cuti"))
+          : ListView.builder(
+              itemCount: listCuti.length,
+              itemBuilder: (context, index) {
+                final item = listCuti[index];
+                final status = item['fs_status'];
 
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 3,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Nama jenis cuti
-                            Text(
-                              safeString(item['fs_nm_jenis_cuti'], 'Tidak ada nama'),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-
-                            const SizedBox(height: 8),
-
-                            // Tanggal cuti
-                            Text(
-                              "📅 ${safeString(item['fd_tgl_mulai'])} s/d ${safeString(item['fd_tgl_selesai'])}",
-                              style: const TextStyle(fontSize: 14),
-                            ),
-
-                            const SizedBox(height: 8),
-
-                            // Keterangan
-                            Text(
-                              "📝 ${safeString(item['fs_keterangan'])}",
-                              style: const TextStyle(fontSize: 14),
-                            ),
-
-                            const SizedBox(height: 12),
-
-                            // Status
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: statusColor(item['fs_status'])
-                                      .withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  safeString(item['fs_status']),
-                                  style: TextStyle(
-                                    color: statusColor(item['fs_status']),
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  child: ListTile(
+                    title: Text(item['fs_nm_jenis_cuti']),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Tanggal: ${item['fd_tgl_mulai']} s/d ${item['fd_tgl_akhir']}",
                         ),
-                      ),
-                    );
-                  },
-                ),
+                        const SizedBox(height: 4),
+                        Text(
+                          statusText(status),
+                          style: TextStyle(
+                            color: statusColor(status),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }
