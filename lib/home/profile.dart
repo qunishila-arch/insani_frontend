@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 class ProfilePage extends StatefulWidget {
   final String kdPeg;
+
   const ProfilePage({super.key, required this.kdPeg});
 
   @override
@@ -13,85 +14,179 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   bool isLoading = true;
 
-  String namaPeg = '';
-  String namaAtasan = '';
+  String namaPegawai = '';
   String lokasi = '';
-
-  final passwordController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    debugPrint("KD PEG DI PROFILE: ${widget.kdPeg}");
     fetchProfile();
   }
 
   Future<void> fetchProfile() async {
-    final url =
-        "http://localhost/insani/API/profile.php?kd_peg=${widget.kdPeg}";
+    try {
+      final response = await http.get(
+        Uri.parse(
+          "http://192.168.43.87/insani/API/profile.php?kd_peg=${widget.kdPeg}",
+        ),
+      );
 
-    final res = await http.get(Uri.parse(url));
-    final jsonData = json.decode(res.body);
+      debugPrint("RESPONSE PROFILE: ${response.body}");
 
-    if (jsonData['status'] == true) {
+      final result = json.decode(response.body);
+
+      if (result['status'] == true) {
+        setState(() {
+          namaPegawai = result['data']['nm_peg'];
+          lokasi = result['data']['nm_lokasi'];
+          isLoading = false;
+        });
+      } else {
+        isLoading = false;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result['message'])));
+      }
+    } catch (e) {
+      debugPrint("ERROR PROFILE: $e");
       setState(() {
-        namaPeg = jsonData['data']['fs_nm_peg'];
-        namaAtasan = jsonData['data']['nm_atasan'] ?? '-';
-        lokasi = jsonData['data']['fs_nm_lokasi'];
         isLoading = false;
       });
     }
   }
 
-  Future<void> updatePassword() async {
-    if (passwordController.text.isEmpty) return;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const Spacer(),
+                        const Icon(Icons.person_outline),
+                      ],
+                    ),
+                  ),
 
-    final res = await http.post(
-      Uri.parse("http://localhost/insani/API/profile.php"),
-      body: {"kd_peg": widget.kdPeg, "password": passwordController.text},
+                  const SizedBox(height: 20),
+
+                  const CircleAvatar(
+                    radius: 45,
+                    backgroundColor: Colors.grey,
+                    child: Icon(Icons.person, size: 40, color: Colors.white),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Text(
+                    namaPegawai,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    "Kode Pegawai: ${widget.kdPeg}",
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        _ProfileField(
+                          label: 'Lokasi',
+                          initialValue: lokasi,
+                          enabled: false,
+                        ),
+                        const SizedBox(height: 12),
+                        const _ProfileField(
+                          label: 'Password Baru',
+                          obscure: true,
+                        ),
+                        const SizedBox(height: 12),
+                        const _ProfileField(
+                          label: 'Ulangi Password',
+                          obscure: true,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // nanti isi update password
+                        },
+                        child: const Text('SIMPAN'),
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 10),
+                    child: Text(
+                      '© RSI Wonosobo 2025',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
-
-    final jsonData = json.decode(res.body);
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(jsonData['message'])));
   }
+}
+
+class _ProfileField extends StatelessWidget {
+  final String label;
+  final bool obscure;
+  final bool enabled;
+  final String? initialValue;
+
+  const _ProfileField({
+    required this.label,
+    this.obscure = false,
+    this.enabled = true,
+    this.initialValue,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    return Scaffold(
-      appBar: AppBar(title: const Text("Profile")),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Text(namaPeg, style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Text("Atasan: $namaAtasan"),
-            Text("Lokasi: $lokasi"),
-            const SizedBox(height: 20),
-
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: "Password Baru",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            ElevatedButton(
-              onPressed: updatePassword,
-              child: const Text("SIMPAN"),
-            ),
-          ],
-        ),
+    return TextField(
+      obscureText: obscure,
+      enabled: enabled,
+      controller: initialValue != null
+          ? TextEditingController(text: initialValue)
+          : null,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
       ),
     );
   }

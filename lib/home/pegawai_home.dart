@@ -50,7 +50,6 @@ class PegawaiHome extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // PENGUMUMAN
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(

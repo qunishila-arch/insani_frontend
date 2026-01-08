@@ -52,7 +52,7 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
     }
   }
 
-  /// 🔒 FORCE STRING (ANTI NULL)
+  
   String safe(dynamic value) {
     if (value == null) return '-';
     return value.toString();
