@@ -13,7 +13,7 @@ class ListOrderCutiPage extends StatefulWidget {
 
 class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
   bool isLoading = true;
-  List listCuti = [];
+  List<Map<String, dynamic>> listCuti = [];
 
   @override
   void initState() {
@@ -29,11 +29,13 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
         ),
       );
 
-      final result = json.decode(response.body);
+      final jsonBody = json.decode(response.body);
 
-      if (result['status'] == true) {
+      if (jsonBody is Map &&
+          jsonBody['status'] == true &&
+          jsonBody['data'] is List) {
         setState(() {
-          listCuti = result['data'];
+          listCuti = List<Map<String, dynamic>>.from(jsonBody['data']);
           isLoading = false;
         });
       } else {
@@ -43,8 +45,17 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
         });
       }
     } catch (e) {
-      isLoading = false;
+      setState(() {
+        listCuti = [];
+        isLoading = false;
+      });
     }
+  }
+
+  /// 🔒 FORCE STRING (ANTI NULL)
+  String safe(dynamic value) {
+    if (value == null) return '-';
+    return value.toString();
   }
 
   String statusText(String status) {
@@ -83,7 +94,8 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
               itemCount: listCuti.length,
               itemBuilder: (context, index) {
                 final item = listCuti[index];
-                final status = item['fs_status'];
+
+                final String status = safe(item['fs_status']).toUpperCase();
 
                 return Card(
                   margin: const EdgeInsets.symmetric(
@@ -91,14 +103,18 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
                     vertical: 6,
                   ),
                   child: ListTile(
-                    title: Text(item['fs_nm_jenis_cuti']),
+                    title: Text(
+                      safe(item['fs_nm_jenis_cuti']),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          "Tanggal: ${item['fd_tgl_mulai']} s/d ${item['fd_tgl_akhir']}",
-                        ),
                         const SizedBox(height: 4),
+                        Text(
+                          "Tanggal: ${safe(item['fd_tgl_mulai'])} s/d ${safe(item['fd_tgl_akhir'])}",
+                        ),
+                        const SizedBox(height: 6),
                         Text(
                           statusText(status),
                           style: TextStyle(

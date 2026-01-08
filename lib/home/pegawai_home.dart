@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../cuti/order_cuti.dart';
 import '../cuti/list_order_cuti.dart';
+import 'profile.dart';
 
 class PegawaiHome extends StatelessWidget {
   final String kdPeg;
@@ -20,23 +21,26 @@ class PegawaiHome extends StatelessWidget {
                 children: [
                   Image.asset('assets/logorsi.png', height: 40),
                   const SizedBox(width: 10),
-                  const Expanded(
-                    child: Text(
-                      '',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
+                  const Expanded(child: SizedBox()),
+
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProfilePage(kdPeg: kdPeg),
+                        ),
+                      );
+                    },
+                    child: const CircleAvatar(
+                      backgroundColor: Colors.grey,
+                      child: Icon(Icons.person, color: Colors.white),
                     ),
-                  ),
-                  const CircleAvatar(
-                    backgroundColor: Colors.grey,
-                    child: Icon(Icons.person, color: Colors.white),
                   ),
                 ],
               ),
             ),
+
             Image.asset(
               'assets/rsi.jpeg',
               width: double.infinity,
@@ -46,6 +50,7 @@ class PegawaiHome extends StatelessWidget {
 
             const SizedBox(height: 16),
 
+            // PENGUMUMAN
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
@@ -95,6 +100,7 @@ class PegawaiHome extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 20),
+
                   _menuButton(
                     icon: Icons.list_alt,
                     title: 'List Order Cuti',
@@ -121,6 +127,7 @@ class PegawaiHome extends StatelessWidget {
             ),
 
             const Spacer(),
+
             const Padding(
               padding: EdgeInsets.only(bottom: 10),
               child: Text(
