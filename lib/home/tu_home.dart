@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 class TuHome extends StatelessWidget {
-  const TuHome({super.key});
+  final String kdPeg;
+
+  const TuHome({super.key, required this.kdPeg});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text("Homepage TU")),
-    );
+    return Scaffold(body: Center(child: Text("TU HOME - $kdPeg")));
   }
 }

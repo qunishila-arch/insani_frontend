@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../cuti/order_cuti.dart';
 import '../cuti/list_order_cuti.dart';
-import 'profile.dart';
+import '../widgets/profile.dart';
 
 class PegawaiHome extends StatelessWidget {
   final String kdPeg;

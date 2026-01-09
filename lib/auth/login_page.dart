@@ -53,34 +53,30 @@ class _LoginPageState extends State<LoginPage> {
 
       if (result['status'] == true) {
         final data = result['data'];
-
         String kdPeg = data['kd_peg'].toString();
-        String role = data['role'].toString();
-        String username = data['username'].toString();
+        String role = data['role'].toString().toUpperCase();
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('kd_peg', kdPeg);
         await prefs.setString('role', role);
-        await prefs.setString('username', username);
+        await prefs.setString('username', data['username'].toString());
 
         if (!mounted) return;
 
-        if (role == '1' || role.toUpperCase() == 'PEGAWAI') {
+        if (role == 'PEGAWAI') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (_) => PegawaiHome(kdPeg: data['kd_peg']),
-            ),
+            MaterialPageRoute(builder: (_) => PegawaiHome(kdPeg: kdPeg)),
           );
-        } else if (role == '2' || role.toUpperCase() == 'HRD') {
+        } else if (role == 'HRD') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const HrdHome()),
+            MaterialPageRoute(builder: (_) => HrdHome(kdPeg: kdPeg)),
           );
-        } else if (role == '3' || role.toUpperCase() == 'TU') {
+        } else if (role == 'TU') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const TuHome()),
+            MaterialPageRoute(builder: (_) => TuHome(kdPeg: kdPeg)),
           );
         } else {
           ScaffoldMessenger.of(
@@ -127,11 +123,11 @@ class _LoginPageState extends State<LoginPage> {
                 margin: const EdgeInsets.symmetric(horizontal: 30),
                 padding: const EdgeInsets.all(25),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: Colors.black.withOpacity(0.1),
                       blurRadius: 15,
                       offset: const Offset(0, 5),
                     ),
@@ -239,11 +235,7 @@ class _LoginPageState extends State<LoginPage> {
                 ? Icons.visibility_off_outlined
                 : Icons.visibility_outlined,
           ),
-          onPressed: () {
-            setState(() {
-              _obscurePassword = !_obscurePassword;
-            });
-          },
+          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
         ),
       ),
     );
