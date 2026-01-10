@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../core/konstan.dart';
 
 class ProfilePage extends StatefulWidget {
   final String kdPeg;
@@ -17,8 +18,8 @@ class _ProfilePageState extends State<ProfilePage> {
   String lokasi = '';
   String atasan = '';
 
-  final passCtrl = TextEditingController();
-  final ulangCtrl = TextEditingController();
+  final passController = TextEditingController();
+  final ulangController = TextEditingController();
 
   @override
   void initState() {
@@ -28,17 +29,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   void dispose() {
-    passCtrl.dispose();
-    ulangCtrl.dispose();
+    passController.dispose();
+    ulangController.dispose();
     super.dispose();
   }
 
   Future<void> fetchProfile() async {
     try {
       final res = await http.get(
-        Uri.parse(
-          "http://192.168.43.87/insani/API/profile.php?action=get&kd_peg=${widget.kdPeg}",
-        ),
+        Uri.parse("$profileUrl?action=get&kd_peg=${widget.kdPeg}"),
       );
 
       final jsonRes = json.decode(res.body);
@@ -65,14 +64,14 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> updatePassword() async {
-    if (passCtrl.text != ulangCtrl.text) {
+    if (passController.text != ulangController.text) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Password tidak sama")));
       return;
     }
 
-    if (passCtrl.text.isEmpty) {
+    if (passController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Password tidak boleh kosong")),
       );
@@ -81,11 +80,12 @@ class _ProfilePageState extends State<ProfilePage> {
 
     try {
       final res = await http.post(
-        Uri.parse(
-          "http://192.168.43.87/insani/API/profile.php?action=update_password",
-        ),
+        Uri.parse("$profileUrl?action=update_password"),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"kd_peg": widget.kdPeg, "password": passCtrl.text}),
+        body: jsonEncode({
+          "kd_peg": widget.kdPeg,
+          "password": passController.text,
+        }),
       );
 
       final jsonRes = json.decode(res.body);
@@ -95,8 +95,8 @@ class _ProfilePageState extends State<ProfilePage> {
       ).showSnackBar(SnackBar(content: Text(jsonRes['message'] ?? "Berhasil")));
 
       if (jsonRes['status'] == true) {
-        passCtrl.clear();
-        ulangCtrl.clear();
+        passController.clear();
+        ulangController.clear();
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -135,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
             _readonlyField("Atasan", atasan),
             const SizedBox(height: 20),
             TextField(
-              controller: passCtrl,
+              controller: passController,
               obscureText: true,
               decoration: const InputDecoration(
                 labelText: "Password Baru",
@@ -144,7 +144,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 10),
             TextField(
-              controller: ulangCtrl,
+              controller: ulangController,
               obscureText: true,
               decoration: const InputDecoration(
                 labelText: "Ulangi Password",

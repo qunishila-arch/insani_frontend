@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import '../core/konstan.dart';
 import '../core/app_colors.dart';
 import 'login_page.dart';
 
@@ -17,8 +19,8 @@ class _RegisterPageState extends State<RegisterPage> {
   bool isLoading = false;
   bool isLoadingKaryawan = true;
 
-  final TextEditingController Username = TextEditingController();
-  final TextEditingController Password = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   List<Map<String, String>> daftarKaryawan = [];
 
@@ -30,54 +32,48 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
-    Username.dispose();
-    Password.dispose();
+    usernameController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
   Future<void> fetchKaryawan() async {
     try {
-      final response = await http.get(
-        Uri.parse("http://192.168.43.87/insani/API/get_karyawan.php"),
-      );
+      final response = await http.get(Uri.parse(getKaryawanUrl));
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final jsonRes = json.decode(response.body);
 
-        setState(() {
-          daftarKaryawan = List<Map<String, String>>.from(
-            (data['data'] as List).map(
-              (item) => {
-                "kd_peg": item['kd_peg'].toString(),
-                "nama": item['nama'].toString(),
-              },
-            ),
-          );
+        if (jsonRes['status'] == true) {
+          setState(() {
+            daftarKaryawan = List<Map<String, String>>.from(
+              (jsonRes['data'] as List).map(
+                (item) => {
+                  "kd_peg": item['kd_peg'].toString(),
+                  "nama": item['nama'].toString(),
+                },
+              ),
+            );
+            isLoadingKaryawan = false;
+          });
+        } else {
           isLoadingKaryawan = false;
-        });
+        }
       } else {
-        setState(() => isLoadingKaryawan = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Gagal memuat karyawan: ${response.statusCode}"),
-          ),
-        );
+        isLoadingKaryawan = false;
       }
     } catch (e) {
-      setState(() => isLoadingKaryawan = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Terjadi kesalahan: $e")));
+      isLoadingKaryawan = false;
     }
   }
 
   Future<void> registerApi() async {
-    if (Username.text.isEmpty ||
-        Password.text.isEmpty ||
+    if (usernameController.text.isEmpty ||
+        passwordController.text.isEmpty ||
         selectedKaryawan == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text("Lengkapi Data!")));
+      ).showSnackBar(const SnackBar(content: Text("Lengkapi semua data")));
       return;
     }
 
@@ -85,38 +81,32 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final response = await http.post(
-        Uri.parse("http://192.168.43.87/insani/API/register.php"),
+        Uri.parse(registerUrl),
         body: {
           "fs_kd_peg": daftarKaryawan.firstWhere(
-            (k) => k['nama'] == selectedKaryawan,
+            (e) => e['nama'] == selectedKaryawan,
           )['kd_peg']!,
-          "username": Username.text.trim(),
-          "password": Password.text.trim(),
+          "username": usernameController.text.trim(),
+          "password": passwordController.text.trim(),
         },
       );
 
-      if (response.statusCode == 200) {
-        final result = json.decode(response.body);
+      final jsonRes = json.decode(response.body);
 
-        ScaffoldMessenger.of(
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(jsonRes['message'] ?? "Sukses")));
+
+      if (jsonRes['status'] == true) {
+        Navigator.pushReplacement(
           context,
-        ).showSnackBar(SnackBar(content: Text(result['message'])));
-
-        if (result['status'] == true) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginPage()),
-          );
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Server error: ${response.statusCode}")),
+          MaterialPageRoute(builder: (_) => const LoginPage()),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Terjadi kesalahan: $e")));
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
       setState(() => isLoading = false);
     }
@@ -139,6 +129,7 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           Positioned(
             left: 20,
+            top: 40,
             child: Image.asset('assets/logorsi.png', height: 75),
           ),
           Center(
@@ -148,7 +139,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 margin: const EdgeInsets.symmetric(horizontal: 30),
                 padding: const EdgeInsets.all(25),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withOpacity(0.95),
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
@@ -170,14 +161,19 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                     const SizedBox(height: 25),
-                    _buildTextField("Username"),
+
+                    _buildTextField("Username", usernameController),
                     const SizedBox(height: 15),
+
                     _buildPasswordField(),
                     const SizedBox(height: 15),
+
                     isLoadingKaryawan
                         ? const CircularProgressIndicator()
                         : _buildDropdownField(),
+
                     const SizedBox(height: 25),
+
                     SizedBox(
                       width: 140,
                       height: 45,
@@ -202,14 +198,13 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                       ),
                     ),
+
                     const SizedBox(height: 15),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          "Sudah Punya Akun? ",
-                          style: TextStyle(fontSize: 13),
-                        ),
+                        const Text("Sudah punya akun? "),
                         GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -224,7 +219,6 @@ class _RegisterPageState extends State<RegisterPage> {
                             style: TextStyle(
                               color: AppColors.primaryGreen,
                               fontWeight: FontWeight.bold,
-                              fontSize: 13,
                             ),
                           ),
                         ),
@@ -240,32 +234,18 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildTextField(String label) {
+  Widget _buildTextField(String label, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(color: AppColors.textGrey, fontSize: 13),
-        ),
+        Text(label, style: const TextStyle(fontSize: 13)),
         const SizedBox(height: 5),
         TextField(
-          controller: Username,
+          controller: controller,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 12,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.inputBorder),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primaryGreen),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ],
@@ -276,42 +256,22 @@ class _RegisterPageState extends State<RegisterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Password",
-          style: TextStyle(color: AppColors.textGrey, fontSize: 13),
-        ),
+        const Text("Password", style: TextStyle(fontSize: 13)),
         const SizedBox(height: 5),
         TextField(
-          controller: Password,
+          controller: passwordController,
           obscureText: _obscurePassword,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
             suffixIcon: IconButton(
               icon: Icon(
-                _obscurePassword
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
-                size: 20,
+                _obscurePassword ? Icons.visibility_off : Icons.visibility,
               ),
-              onPressed: () {
-                setState(() {
-                  _obscurePassword = !_obscurePassword;
-                });
-              },
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 12,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.inputBorder),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primaryGreen),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ],
@@ -322,13 +282,9 @@ class _RegisterPageState extends State<RegisterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Nama Karyawan",
-          style: TextStyle(color: AppColors.textGrey, fontSize: 13),
-        ),
+        const Text("Nama Karyawan", style: TextStyle(fontSize: 13)),
         const SizedBox(height: 5),
         DropdownButtonFormField<String>(
-          isExpanded: true,
           value: selectedKaryawan,
           hint: const Text("Pilih Karyawan"),
           items: daftarKaryawan
@@ -341,18 +297,7 @@ class _RegisterPageState extends State<RegisterPage> {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 12,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.inputBorder),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primaryGreen),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ],

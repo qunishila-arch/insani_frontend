@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'list_order_cuti.dart';
+import '../core/konstan.dart';
 
 class OrderCutiPage extends StatefulWidget {
   final String kdPeg;
@@ -38,9 +39,7 @@ class _OrderCutiPageState extends State<OrderCutiPage> {
 
   Future<void> fetchJenisCuti() async {
     try {
-      final response = await http.get(
-        Uri.parse("http://192.168.43.87/insani/API/cuti.php?action=jenis_cuti"),
-      );
+      final response = await http.get(Uri.parse("$cutiUrl?action=jenis_cuti"));
 
       final result = jsonDecode(response.body);
 
@@ -89,7 +88,7 @@ class _OrderCutiPageState extends State<OrderCutiPage> {
 
     try {
       final response = await http.post(
-        Uri.parse("http://192.168.43.87/insani/API/cuti.php?action=submit"),
+        Uri.parse("$cutiUrl?action=submit"),
         body: body,
       );
 

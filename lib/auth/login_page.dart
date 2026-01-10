@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/konstan.dart';
 import '../core/app_colors.dart';
 import 'register_page.dart';
 import '../home/hrd_home.dart';
@@ -42,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse("http://192.168.43.87/insani/API/login.php"),
+        Uri.parse(baseUrl + "login.php"),
         body: {
           "username": Username.text.trim(),
           "password": Password.text.trim(),
@@ -174,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Belum Punya Akun? "),
+                        const Text("Belum Punya Akun?"),
                         GestureDetector(
                           onTap: () {
                             Navigator.push(

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../core/konstan.dart';
 
 class ListOrderCutiPage extends StatefulWidget {
   final String kdPeg;
@@ -24,9 +25,7 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
   Future<void> fetchCuti() async {
     try {
       final response = await http.get(
-        Uri.parse(
-          "http://192.168.43.87/insani/API/cuti.php?action=list&kd_peg=${widget.kdPeg}",
-        ),
+        Uri.parse("$cutiUrl?action=list&kd_peg=${widget.kdPeg}"),
       );
 
       final jsonBody = json.decode(response.body);
@@ -52,7 +51,6 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
     }
   }
 
-  
   String safe(dynamic value) {
     if (value == null) return '-';
     return value.toString();
