@@ -5,7 +5,6 @@ import '../core/konstan.dart';
 
 class VerifCutiPage extends StatefulWidget {
   final String kdPeg;
-
   const VerifCutiPage({super.key, required this.kdPeg});
 
   @override
@@ -13,125 +12,93 @@ class VerifCutiPage extends StatefulWidget {
 }
 
 class _VerifCutiPageState extends State<VerifCutiPage> {
-  bool isLoading = true;
-  List cutiList = [];
+  bool loading = true;
+  List cuti = [];
 
   @override
   void initState() {
     super.initState();
-    fetchCuti();
+    fetch();
   }
 
-  Future<void> fetchCuti() async {
-    try {
-      final res = await http.get(
-        Uri.parse("$cutiUrl?action=list_atasan&kd_peg=${widget.kdPeg}"),
-      );
-
-      final jsonRes = json.decode(res.body);
-
-      if (jsonRes['status'] == true) {
-        setState(() {
-          cutiList = jsonRes['data'];
-          isLoading = false;
-        });
-      } else {
-        setState(() => isLoading = false);
-      }
-    } catch (e) {
-      setState(() => isLoading = false);
-    }
-  }
-
-  Future<void> verifCuti(String idCuti, String status) async {
-    await http.post(
-      Uri.parse("$cutiUrl?action=verif"),
-      body: {"id": idCuti, "status": status},
+  Future<void> fetch() async {
+    final r = await http.get(
+      Uri.parse("$cutiUrl?action=list&kd_peg=${widget.kdPeg}"),
     );
-
-    fetchCuti();
+    final j = json.decode(r.body);
+    setState(() {
+      cuti = j['data'] ?? [];
+      loading = false;
+    });
   }
+
+  Future<void> approve(String id) async {
+    await http.post(
+      Uri.parse("$cutiUrl?action=approve"),
+      body: {"kd_trs": id, "kd_petugas": widget.kdPeg},
+    );
+    fetch();
+  }
+
+  Future<void> reject(String id) async {
+    await http.post(
+      Uri.parse("$cutiUrl?action=reject"),
+      body: {"kd_trs": id, "kd_petugas": widget.kdPeg, "alasan": "Ditolak"},
+    );
+    fetch();
+  }
+
+  String t(v) => v == null || v.toString().isEmpty ? "-" : v.toString();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(title: const Text("Verifikasi Cuti")),
-      body: isLoading
+      body: loading
           ? const Center(child: CircularProgressIndicator())
-          : cutiList.isEmpty
-          ? const Center(child: Text("Belum ada Pengajuan Cuti"))
+          : cuti.isEmpty
+          ? const Center(child: Text("Tidak ada pengajuan"))
           : ListView.builder(
-              itemCount: cutiList.length,
-              itemBuilder: (context, index) {
-                final c = cutiList[index];
+              itemCount: cuti.length,
+              itemBuilder: (c, i) {
+                final d = cuti[i];
                 return Card(
                   margin: const EdgeInsets.all(12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
                   child: Padding(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          c['nm_peg'],
+                          t(d['fs_nm_peg']),
                           style: const TextStyle(
-                            fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text("Jenis Cuti : ${c['jenis_cuti']}"),
+                        Text("Jenis : ${t(d['fs_nm_jenis_cuti'])}"),
                         Text(
-                          "Tanggal   : ${c['tgl_mulai']} - ${c['tgl_selesai']}",
+                          "Tanggal : ${t(d['fd_tgl_mulai'])} - ${t(d['fd_tgl_akhir'])}",
                         ),
-                        Text("Alasan    : ${c['alasan']}"),
-                        const SizedBox(height: 12),
-
-                        if (c['status'] == 'PENDING')
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                  ),
-                                  onPressed: () =>
-                                      verifCuti(c['id'], 'APPROVE'),
-                                  child: const Text("APPROVE"),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                  ),
-                                  onPressed: () => verifCuti(c['id'], 'REJECT'),
-                                  child: const Text("REJECT"),
-                                ),
-                              ),
-                            ],
-                          )
-                        else
-                          Container(
-                            alignment: Alignment.center,
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: c['status'] == 'APPROVE'
-                                  ? Colors.green.shade100
-                                  : Colors.red.shade100,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              "Status: ${c['status']}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                        Text("Alasan : ${t(d['fs_keterangan'])}"),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => approve(d['fs_kd_trs']),
+                                child: const Text("APPROVE"),
                               ),
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => reject(d['fs_kd_trs']),
+                                child: const Text("REJECT"),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),

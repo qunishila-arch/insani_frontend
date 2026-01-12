@@ -41,12 +41,18 @@ class _OrderCutiPageState extends State<OrderCutiPage> {
     try {
       final response = await http.get(Uri.parse("$cutiUrl?action=jenis_cuti"));
 
-      final result = jsonDecode(response.body);
+      final decoded = jsonDecode(response.body);
 
-      if (result['status'] == true) {
+      if (decoded is Map && decoded['data'] != null) {
         setState(() {
-          jenisCutiList = List<Map<String, dynamic>>.from(result['data']);
+          jenisCutiList = List<Map<String, dynamic>>.from(decoded['data']);
         });
+      } else if (decoded is List) {
+        setState(() {
+          jenisCutiList = List<Map<String, dynamic>>.from(decoded);
+        });
+      } else {
+        _notif("Data jenis cuti kosong");
       }
     } catch (_) {
       _notif("Gagal ambil jenis cuti");
@@ -54,7 +60,7 @@ class _OrderCutiPageState extends State<OrderCutiPage> {
   }
 
   Future<void> pickDate(TextEditingController controller) async {
-    DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2020),
@@ -78,42 +84,36 @@ class _OrderCutiPageState extends State<OrderCutiPage> {
 
     setState(() => isLoading = true);
 
-    final body = {
-      "kd_peg": widget.kdPeg,
-      "kd_jenis_cuti": selectedCuti!,
-      "tgl_mulai": tglMulaiController.text,
-      "tgl_selesai": tglSelesaiController.text,
-      "keterangan": keteranganController.text,
-    };
-
     try {
       final response = await http.post(
         Uri.parse("$cutiUrl?action=submit"),
-        body: body,
+        body: {
+          "kd_peg": widget.kdPeg,
+          "kd_jenis_cuti": selectedCuti!,
+          "tgl_mulai": tglMulaiController.text,
+          "tgl_selesai": tglSelesaiController.text,
+          "keterangan": keteranganController.text,
+        },
       );
 
-      if (response.statusCode != 200) {
-        setState(() => isLoading = false);
-        _notif("Server error ${response.statusCode}");
-        return;
-      }
-
-      final result = jsonDecode(response.body);
       setState(() => isLoading = false);
 
-      _notif(result['message']);
+      final decoded = jsonDecode(response.body);
 
-      if (result['status'] == true) {
+      if (decoded['status'] == true) {
+        _notif(decoded['message'] ?? "Berhasil ajukan cuti");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (_) => ListOrderCutiPage(kdPeg: widget.kdPeg),
           ),
         );
+      } else {
+        _notif(decoded['message'] ?? "Gagal submit cuti");
       }
     } catch (_) {
       setState(() => isLoading = false);
-      _notif("Gagal submit cuti");
+      _notif("Server tidak merespon");
     }
   }
 
@@ -163,7 +163,9 @@ class _OrderCutiPageState extends State<OrderCutiPage> {
                       child: Text(e['fs_nm_jenis_cuti'].toString()),
                     );
                   }).toList(),
-                  onChanged: (value) => setState(() => selectedCuti = value),
+                  onChanged: (value) {
+                    setState(() => selectedCuti = value);
+                  },
                 ),
 
                 const SizedBox(height: 14),
