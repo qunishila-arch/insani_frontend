@@ -50,6 +50,35 @@ class _VerifCutiPageState extends State<VerifCutiPage> {
 
   String t(v) => v == null || v.toString().isEmpty ? "-" : v.toString();
 
+  Widget statusWidget(String? status) {
+    switch (status) {
+      case 'APPROVED':
+        return Row(
+          children: const [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 6),
+            Text("Disetujui", style: TextStyle(color: Colors.green)),
+          ],
+        );
+      case 'REJECTED':
+        return Row(
+          children: const [
+            Icon(Icons.cancel, color: Colors.red),
+            SizedBox(width: 6),
+            Text("Ditolak", style: TextStyle(color: Colors.red)),
+          ],
+        );
+      default:
+        return Row(
+          children: const [
+            Icon(Icons.warning, color: Colors.orange),
+            SizedBox(width: 6),
+            Text("Belum Disetujui", style: TextStyle(color: Colors.orange)),
+          ],
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,11 +105,15 @@ class _VerifCutiPageState extends State<VerifCutiPage> {
                             fontSize: 16,
                           ),
                         ),
+                        const SizedBox(height: 5),
+                        statusWidget(d['fs_status']),
+
+                        const SizedBox(height: 6),
                         Text("Jenis : ${t(d['fs_nm_jenis_cuti'])}"),
                         Text(
                           "Tanggal : ${t(d['fd_tgl_mulai'])} - ${t(d['fd_tgl_akhir'])}",
                         ),
-                        Text("Alasan : ${t(d['fs_keterangan'])}"),
+                        Text("Keterangan : ${t(d['fs_keterangan'])}"),
                         const SizedBox(height: 10),
                         Row(
                           children: [
