@@ -62,7 +62,6 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
         return 'Disetujui';
       case 'REJECTED':
         return 'Ditolak';
-      case 'PENDING':
       default:
         return 'Belum Disetujui';
     }
@@ -74,7 +73,6 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
         return Colors.green;
       case 'REJECTED':
         return Colors.red;
-      case 'PENDING':
       default:
         return Colors.orange;
     }
