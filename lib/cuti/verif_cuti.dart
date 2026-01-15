@@ -21,6 +21,48 @@ class _VerifCutiPageState extends State<VerifCutiPage> {
     fetch();
   }
 
+  void showRejectDialog(String kdTrs) {
+    final TextEditingController alasanController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Tolak Pengajuan Cuti"),
+          content: TextField(
+            controller: alasanController,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              labelText: "Alasan",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("BATAL"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (alasanController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Alasan wajib diisi")),
+                  );
+                  return;
+                }
+
+                reject(kdTrs, alasanController.text.trim());
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text("TOLAK"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> fetch() async {
     try {
       final r = await http.get(
@@ -44,10 +86,7 @@ class _VerifCutiPageState extends State<VerifCutiPage> {
   Future<void> approve(String id) async {
     await http.post(
       Uri.parse("$cutiUrl?action=approve"),
-      body: {
-        "kd_trs": id,
-        "kd_peg": widget.kdPeg, 
-      },
+      body: {"kd_trs": id, "kd_peg": widget.kdPeg},
     );
     fetch();
   }
@@ -96,7 +135,7 @@ class _VerifCutiPageState extends State<VerifCutiPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Verifikasi Cuti")),
+      appBar: AppBar(title: const Text("Persetujuan Cuti")),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : cuti.isEmpty
@@ -105,7 +144,9 @@ class _VerifCutiPageState extends State<VerifCutiPage> {
               itemCount: cuti.length,
               itemBuilder: (c, i) {
                 final d = cuti[i];
-                final status = (d['fs_status'] ?? 'PENDING').toString();
+                final status = (d['fs_status'] ?? 'PENDING')
+                    .toString()
+                    .toUpperCase();
 
                 return Card(
                   margin: const EdgeInsets.all(12),
@@ -131,6 +172,20 @@ class _VerifCutiPageState extends State<VerifCutiPage> {
                         Text("Keterangan : ${t(d['fs_keterangan'])}"),
                         const SizedBox(height: 12),
 
+                        if (status == 'REJECTED' &&
+                            d['fs_alasan_ditolak'] != null &&
+                            d['fs_alasan_ditolak'].toString().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              "Alasan Ditolak: ${t(d['fs_alasan_ditolak'])}",
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+
                         if (status == 'PENDING')
                           Row(
                             children: [
@@ -143,10 +198,8 @@ class _VerifCutiPageState extends State<VerifCutiPage> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: ElevatedButton(
-                                  onPressed: () => reject(
-                                    d['fs_kd_trs'],
-                                    "Ditolak oleh atasan",
-                                  ),
+                                  onPressed: () =>
+                                      showRejectDialog(d['fs_kd_trs']),
                                   child: const Text("REJECT"),
                                 ),
                               ),

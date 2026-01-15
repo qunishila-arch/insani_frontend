@@ -118,6 +118,19 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        if (status == 'REJECTED' &&
+                            item['fs_alasan_ditolak'] != null &&
+                            item['fs_alasan_ditolak'].toString().isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              "Alasan: ${safe(item['fs_alasan_ditolak'])}",
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),

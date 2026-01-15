@@ -112,7 +112,7 @@ class HrdHome extends StatelessWidget {
                     const SizedBox(height: 20),
                     _menuButton(
                       icon: Icons.check_circle_outline,
-                      title: 'Verifikasi Cuti',
+                      title: 'Persetujuan Cuti',
                       onTap: () {
                         Navigator.push(
                           context,
