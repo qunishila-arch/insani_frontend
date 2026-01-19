@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/konstan.dart';
 import '../core/app_colors.dart';
 import 'register_page.dart';
-import '../home/hrd_home.dart';
+import '../home/atasan_home.dart';
 import '../home/tu_home.dart';
 import '../home/pegawai_home.dart';
 
@@ -69,10 +69,10 @@ class _LoginPageState extends State<LoginPage> {
             context,
             MaterialPageRoute(builder: (_) => PegawaiHome(kdPeg: kdPeg)),
           );
-        } else if (role == 'HRD') {
+        } else if (role == 'ATASAN') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => HrdHome(kdPeg: kdPeg)),
+            MaterialPageRoute(builder: (_) => AtasanHome(kdPeg: kdPeg)),
           );
         } else if (role == 'TU') {
           Navigator.pushReplacement(

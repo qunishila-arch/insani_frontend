@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import '../cuti/order_cuti.dart';
 import '../cuti/list_order_cuti.dart';
-import '../cuti/verif_cuti.dart';
+import '../cuti/approve_cuti.dart';
 import '../widgets/profile.dart';
 
-class HrdHome extends StatelessWidget {
+class AtasanHome extends StatelessWidget {
   final String kdPeg;
 
-  const HrdHome({super.key, required this.kdPeg});
+  const AtasanHome({super.key, required this.kdPeg});
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +117,7 @@ class HrdHome extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => VerifCutiPage(kdPeg: kdPeg),
+                            builder: (_) => ApproveCutiPage(kdPeg: kdPeg),
                           ),
                         );
                       },

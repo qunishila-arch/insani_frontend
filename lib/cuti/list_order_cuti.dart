@@ -14,13 +14,21 @@ class ListOrderCutiPage extends StatefulWidget {
 
 class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
   bool isLoading = true;
+
   List<Map<String, dynamic>> listCuti = [];
-  DateTimeRange? selectedRange;
   List<Map<String, dynamic>> filteredCuti = [];
+
+  late DateTime tglMulai;
+  late DateTime tglSelesai;
 
   @override
   void initState() {
     super.initState();
+
+    final now = DateTime.now();
+    tglMulai = DateTime(now.year, now.month, now.day);
+    tglSelesai = DateTime(now.year, now.month, now.day);
+
     fetchCuti();
   }
 
@@ -38,6 +46,7 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
         setState(() {
           listCuti = List<Map<String, dynamic>>.from(jsonBody['data']);
           filteredCuti = listCuti;
+          filterTanggal();
           isLoading = false;
         });
       } else {
@@ -56,9 +65,27 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
     }
   }
 
+  void filterTanggal() {
+    setState(() {
+      filteredCuti = listCuti.where((item) {
+        final start = DateTime.tryParse(item['fd_tgl_mulai'] ?? '');
+        final end = DateTime.tryParse(item['fd_tgl_akhir'] ?? '');
+        if (start == null || end == null) return false;
+
+        return !(end.isBefore(tglMulai) || start.isAfter(tglSelesai));
+      }).toList();
+    });
+  }
+
   String safe(dynamic value) {
-    if (value == null) return '-';
+    if (value == null || value.toString().isEmpty) return '-';
     return value.toString();
+  }
+
+  String formatDate(DateTime d) {
+    return "${d.day.toString().padLeft(2, '0')}-"
+        "${d.month.toString().padLeft(2, '0')}-"
+        "${d.year}";
   }
 
   String statusText(String status) {
@@ -83,21 +110,6 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
     }
   }
 
-  void filterByRange() {
-    if (selectedRange == null) return;
-
-    setState(() {
-      filteredCuti = listCuti.where((item) {
-        final start = DateTime.tryParse(item['fd_tgl_mulai'] ?? '');
-        final end = DateTime.tryParse(item['fd_tgl_akhir'] ?? '');
-        if (start == null || end == null) return false;
-
-        return !(end.isBefore(selectedRange!.start) ||
-            start.isAfter(selectedRange!.end));
-      }).toList();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -110,40 +122,55 @@ class _ListOrderCutiPageState extends State<ListOrderCutiPage> {
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
-                            final range = await showDateRangePicker(
-                              context: context,
-                              firstDate: DateTime(2020),
-                              lastDate: DateTime(2100),
-                            );
-                            if (range != null) {
-                              setState(() => selectedRange = range);
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 14,
-                            ),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              selectedRange == null
-                                  ? "[ Pilih Tanggal ]"
-                                  : "[ ${selectedRange!.start.toString().substring(0, 10)} ] "
-                                        "sampai "
-                                        "[ ${selectedRange!.end.toString().substring(0, 10)} ]",
-                            ),
+                      InkWell(
+                        onTap: () async {
+                          final d = await showDatePicker(
+                            context: context,
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime(2100),
+                            initialDate: tglMulai,
+                          );
+                          if (d != null) {
+                            setState(() => tglMulai = d);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(6),
                           ),
+                          child: Text(formatDate(tglMulai)),
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text("sampai"),
+                      ),
+                      InkWell(
+                        onTap: () async {
+                          final d = await showDatePicker(
+                            context: context,
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime(2100),
+                            initialDate: tglSelesai,
+                          );
+                          if (d != null) {
+                            setState(() => tglSelesai = d);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(formatDate(tglSelesai)),
                         ),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
-                        onPressed: filterByRange,
+                        onPressed: filterTanggal,
                         child: const Text("FILTER"),
                       ),
                     ],

@@ -102,7 +102,7 @@ class PegawaiHome extends StatelessWidget {
 
                   _menuButton(
                     icon: Icons.list_alt,
-                    title: 'List Order Cuti',
+                    title: 'List Cuti',
                     onTap: () {
                       Navigator.push(
                         context,
