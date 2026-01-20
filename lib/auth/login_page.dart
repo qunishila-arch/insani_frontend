@@ -9,6 +9,7 @@ import 'register_page.dart';
 import '../home/atasan_home.dart';
 import '../home/tu_home.dart';
 import '../home/pegawai_home.dart';
+import '../home/hrd_home.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -54,35 +55,50 @@ class _LoginPageState extends State<LoginPage> {
 
       if (result['status'] == true) {
         final data = result['data'];
-        String kdPeg = data['kd_peg'].toString();
-        String role = data['role'].toString().toUpperCase();
+
+        final String kdPeg = data['kd_peg'].toString();
+        final String role = data['role'].toString().toUpperCase();
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('kd_peg', kdPeg);
         await prefs.setString('role', role);
-        await prefs.setString('username', data['username'].toString());
+        await prefs.setString('username', data['username']);
 
         if (!mounted) return;
 
-        if (role == 'PEGAWAI') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => PegawaiHome(kdPeg: kdPeg)),
-          );
-        } else if (role == 'ATASAN') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => AtasanHome(kdPeg: kdPeg)),
-          );
-        } else if (role == 'TU') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => TuHome(kdPeg: kdPeg)),
-          );
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Role tidak dikenali: $role")));
+        switch (role) {
+          case 'PEGAWAI':
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => PegawaiHome(kdPeg: kdPeg)),
+            );
+            break;
+
+          case 'ATASAN':
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => AtasanHome(kdPeg: kdPeg)),
+            );
+            break;
+
+          case 'HRD':
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => HrdHome(kdPeg: kdPeg)),
+            );
+            break;
+
+          case 'TU':
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => TuHome(kdPeg: kdPeg)),
+            );
+            break;
+
+          default:
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Role tidak dikenali: $role")),
+            );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -115,6 +131,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           Positioned(
             left: 20,
+            top: 40,
             child: Image.asset('assets/logorsi.png', height: 75),
           ),
           Center(
@@ -146,10 +163,13 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 25),
+
                     _buildTextField(),
                     const SizedBox(height: 15),
+
                     _buildPasswordField(),
                     const SizedBox(height: 25),
+
                     SizedBox(
                       width: 140,
                       height: 45,
@@ -171,7 +191,9 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                       ),
                     ),
+
                     const SizedBox(height: 20),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
