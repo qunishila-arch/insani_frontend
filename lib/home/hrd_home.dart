@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../cuti/order_cuti.dart';
 import '../cuti/list_order_cuti.dart';
-import '../cuti/approve_cuti.dart';
+import '../cuti/list_approved_cuti.dart';
 import '../widgets/profile.dart';
 
 class HrdHome extends StatelessWidget {
@@ -117,7 +117,7 @@ class HrdHome extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => ApproveCutiPage(kdPeg: kdPeg),
+                            builder: (_) => ListApprovedCutiPage(kdPeg: kdPeg),
                           ),
                         );
                       },
