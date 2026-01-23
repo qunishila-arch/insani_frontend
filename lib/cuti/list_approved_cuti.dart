@@ -32,7 +32,6 @@ class _ListApprovedCutiPageState extends State<ListApprovedCutiPage> {
   Future<void> fetch() async {
     try {
       final r = await http.get(Uri.parse("$cutiUrl?action=list_approved"));
-
       final j = json.decode(r.body);
 
       setState(() {
@@ -58,11 +57,7 @@ class _ListApprovedCutiPageState extends State<ListApprovedCutiPage> {
 
   Future<void> verifikasiCuti(String kdTrs) async {
     try {
-      final r = await http.post(
-        Uri.parse(cutiUrl),
-        body: {'action': 'verif', 'kd_trs': kdTrs, 'kd_peg': widget.kdPeg},
-      );
-
+      final r = await http.post(Uri.parse(cutiUrl), body: {'fs_kd_trs': kdTrs});
       final j = json.decode(r.body);
 
       ScaffoldMessenger.of(
@@ -173,14 +168,10 @@ class _ListApprovedCutiPageState extends State<ListApprovedCutiPage> {
                                       style: TextStyle(color: Colors.green),
                                     ),
                                     const SizedBox(height: 8),
-                                    Text("Jenis : ${t(d['fs_nm_jenis_cuti'])}"),
-                                    Text(
-                                      "Tanggal : ${t(d['fd_tgl_mulai'])} - ${t(d['fd_tgl_akhir'])}",
-                                    ),
-                                    Text(
-                                      "Keterangan : ${t(d['fs_keterangan'])}",
-                                    ),
-                                    const SizedBox(height: 10),
+
+                                    Text("Lokasi : ${t(d['fs_kd_lokasi'])}"),
+
+                                    const SizedBox(height: 12),
                                     SizedBox(
                                       width: double.infinity,
                                       child: ElevatedButton.icon(
