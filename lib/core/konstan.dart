@@ -5,3 +5,4 @@ const String registerUrl = baseUrl + "register.php";
 const String getKaryawanUrl = baseUrl + "get_karyawan.php";
 const String cutiUrl = baseUrl + "cuti.php";
 const String profileUrl = baseUrl + "profile.php";
+const String hrdUrl  = baseUrl + "hrd.php";

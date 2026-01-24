@@ -17,6 +17,9 @@ class _ListApprovedCutiPageState extends State<ListApprovedCutiPage> {
   List<Map<String, dynamic>> cuti = [];
   List<Map<String, dynamic>> filteredCuti = [];
 
+  List<String> lokasiList = [];
+  String selectedLokasi = 'SEMUA';
+
   late DateTime tglMulai;
   late DateTime tglSelesai;
 
@@ -31,33 +34,50 @@ class _ListApprovedCutiPageState extends State<ListApprovedCutiPage> {
 
   Future<void> fetch() async {
     try {
-      final r = await http.get(Uri.parse("$cutiUrl?action=list_approved"));
+      final r = await http.get(Uri.parse("$hrdUrl?action=list_approved"));
       final j = json.decode(r.body);
 
-      setState(() {
-        cuti = List<Map<String, dynamic>>.from(j['data'] ?? []);
-        filteredCuti = cuti;
-        filterTanggal();
-        loading = false;
-      });
+      cuti = List<Map<String, dynamic>>.from(j['data'] ?? []);
+
+      lokasiList = [
+        'SEMUA',
+        ...{
+          for (var c in cuti)
+            if (c['fs_kd_lokasi'] != null) c['fs_kd_lokasi'].toString(),
+        },
+      ];
+
+      filterData();
+      loading = false;
+      setState(() {});
     } catch (e) {
-      setState(() => loading = false);
+      loading = false;
+      setState(() {});
     }
   }
 
-  void filterTanggal() {
+  void filterData() {
     filteredCuti = cuti.where((item) {
       final start = DateTime.tryParse(item['fd_tgl_mulai'] ?? '');
       final end = DateTime.tryParse(item['fd_tgl_akhir'] ?? '');
       if (start == null || end == null) return false;
-      return !(end.isBefore(tglMulai) || start.isAfter(tglSelesai));
+
+      final filterTanggal =
+          !(end.isBefore(tglMulai) || start.isAfter(tglSelesai));
+
+      final filterLokasi = selectedLokasi == 'SEMUA'
+          ? true
+          : item['fs_kd_lokasi'] == selectedLokasi;
+
+      return filterTanggal && filterLokasi;
     }).toList();
+
     setState(() {});
   }
 
   Future<void> verifikasiCuti(String kdTrs) async {
     try {
-      final r = await http.post(Uri.parse(cutiUrl), body: {'fs_kd_trs': kdTrs});
+      final r = await http.post(Uri.parse(hrdUrl), body: {'fs_kd_trs': kdTrs});
       final j = json.decode(r.body);
 
       ScaffoldMessenger.of(
@@ -102,40 +122,69 @@ class _ListApprovedCutiPageState extends State<ListApprovedCutiPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(12),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      InkWell(
-                        onTap: () async {
-                          final d = await showDatePicker(
-                            context: context,
-                            firstDate: DateTime(2020),
-                            lastDate: DateTime(2100),
-                            initialDate: tglMulai,
-                          );
-                          if (d != null) setState(() => tglMulai = d);
-                        },
-                        child: boxDate(formatDate(tglMulai)),
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () async {
+                              final d = await showDatePicker(
+                                context: context,
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2100),
+                                initialDate: tglMulai,
+                              );
+                              if (d != null) setState(() => tglMulai = d);
+                            },
+                            child: boxDate(formatDate(tglMulai)),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            child: Text("sampai"),
+                          ),
+                          InkWell(
+                            onTap: () async {
+                              final d = await showDatePicker(
+                                context: context,
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2100),
+                                initialDate: tglSelesai,
+                              );
+                              if (d != null) setState(() => tglSelesai = d);
+                            },
+                            child: boxDate(formatDate(tglSelesai)),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: filterData,
+                            child: const Text("FILTER"),
+                          ),
+                        ],
                       ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Text("sampai"),
-                      ),
-                      InkWell(
-                        onTap: () async {
-                          final d = await showDatePicker(
-                            context: context,
-                            firstDate: DateTime(2020),
-                            lastDate: DateTime(2100),
-                            initialDate: tglSelesai,
-                          );
-                          if (d != null) setState(() => tglSelesai = d);
-                        },
-                        child: boxDate(formatDate(tglSelesai)),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: filterTanggal,
-                        child: const Text("FILTER"),
+
+                      const SizedBox(height: 12),
+
+                      SizedBox(
+                        width: 220,
+                        child: DropdownButtonFormField<String>(
+                          value: selectedLokasi,
+                          items: lokasiList
+                              .map(
+                                (e) =>
+                                    DropdownMenuItem(value: e, child: Text(e)),
+                              )
+                              .toList(),
+                          onChanged: (v) {
+                            selectedLokasi = v!;
+                            filterData();
+                          },
+                          decoration: const InputDecoration(
+                            labelText: "Filter Lokasi",
+                            border: OutlineInputBorder(),
+                            isDense: true,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -168,9 +217,7 @@ class _ListApprovedCutiPageState extends State<ListApprovedCutiPage> {
                                       style: TextStyle(color: Colors.green),
                                     ),
                                     const SizedBox(height: 8),
-
-                                    Text("Lokasi : ${t(d['fs_kd_lokasi'])}"),
-
+                                    Text("Lokasi : ${t(d['fs_nm_lokasi'])}"),
                                     const SizedBox(height: 12),
                                     SizedBox(
                                       width: double.infinity,
