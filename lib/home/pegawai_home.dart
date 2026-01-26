@@ -118,7 +118,6 @@ class PegawaiHome extends StatelessWidget {
                   _menuButton(
                     icon: Icons.bookmark_border,
                     title: 'Surat',
-                    badge: '2',
                     onTap: () {},
                   ),
                 ],

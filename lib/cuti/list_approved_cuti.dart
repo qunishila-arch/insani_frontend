@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../core/konstan.dart';
+import '../cuti/verif_cuti.dart';
 
 class ListApprovedCutiPage extends StatefulWidget {
   final String kdPeg;
@@ -224,34 +225,18 @@ class _ListApprovedCutiPageState extends State<ListApprovedCutiPage> {
                                       child: ElevatedButton.icon(
                                         icon: const Icon(Icons.verified),
                                         label: const Text("VERIFIKASI CUTI"),
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (_) => AlertDialog(
-                                              title: const Text("Konfirmasi"),
-                                              content: const Text(
-                                                "Verifikasi cuti ini?",
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(context),
-                                                  child: const Text("BATAL"),
-                                                ),
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                    verifikasiCuti(
-                                                      d['fs_kd_trs'],
-                                                    );
-                                                  },
-                                                  child: const Text(
-                                                    "VERIFIKASI",
-                                                  ),
-                                                ),
-                                              ],
+                                        onPressed: () async {
+                                          final res = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  VerifCutiPage(data: d),
                                             ),
                                           );
+
+                                          if (res == true) {
+                                            fetch();
+                                          }
                                         },
                                       ),
                                     ),
