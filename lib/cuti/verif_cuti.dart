@@ -24,14 +24,13 @@ class _VerifCutiPageState extends State<VerifCutiPage> {
       final res = await http.post(
         Uri.parse("$baseUrl/hrd.php"),
         body: {
-          "aksi": "verif_cuti",
           "fs_kd_trs": widget.data['fs_kd_trs'].toString(),
         },
       );
 
       final Map<String, dynamic> json = jsonDecode(res.body);
 
-      final bool sukses = json['success'] == true || json['status'] == true;
+      final bool sukses = json['status'] == true;
 
       if (!mounted) return;
 
@@ -75,6 +74,7 @@ class _VerifCutiPageState extends State<VerifCutiPage> {
             ),
 
             const SizedBox(height: 16),
+
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(
@@ -120,6 +120,7 @@ class _VerifCutiPageState extends State<VerifCutiPage> {
             ),
 
             const Spacer(),
+
             SizedBox(
               width: double.infinity,
               height: 48,
