@@ -1,8 +1,11 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../core/konstan.dart';
 
 class UploadSuratPage extends StatefulWidget {
@@ -21,7 +24,9 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
   bool loadingPegawai = true;
 
   String selectedPeg = '-1';
-  File? fileSurat;
+
+  Uint8List? fileBytes;
+  String? fileName;
 
   List<Map<String, String>> daftarPegawai = [];
 
@@ -70,13 +75,30 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
     }
   }
 
+  Future<void> pickFile() async {
+    final res = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx'],
+      withData: true,
+    );
+
+    if (res != null && res.files.single.bytes != null) {
+      setState(() {
+        fileBytes = res.files.single.bytes!;
+        fileName = res.files.single.name;
+      });
+    } else {
+      snack("Gagal mengambil file");
+    }
+  }
+
   Future<void> uploadSurat() async {
     if (judulController.text.trim().isEmpty) {
       snack("Judul surat wajib diisi");
       return;
     }
 
-    if (fileSurat == null) {
+    if (fileBytes == null || fileName == null) {
       snack("File surat wajib dipilih");
       return;
     }
@@ -84,16 +106,27 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
     setState(() => loading = true);
 
     try {
-      final request = http.MultipartRequest(
-        "POST",
-        Uri.parse(tataUsahaUrl),
-      );
+      final prefs = await SharedPreferences.getInstance();
+      final username = prefs.getString('username') ?? '';
 
+      if (username.isEmpty) {
+        snack("Session login tidak ditemukan");
+        setState(() => loading = false);
+        return;
+      }
+
+      final request = http.MultipartRequest("POST", Uri.parse(tataUsahaUrl));
+
+      request.fields['username'] = username;
       request.fields['judul_surat'] = judulController.text.trim();
       request.fields['id_ditujukan_ke'] = selectedPeg;
 
       request.files.add(
-        await http.MultipartFile.fromPath('file_surat', fileSurat!.path),
+        http.MultipartFile.fromBytes(
+          'file_surat',
+          fileBytes!,
+          filename: fileName,
+        ),
       );
 
       final response = await request.send();
@@ -104,7 +137,7 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
         snack(json['message']);
         Navigator.pop(context, true);
       } else {
-        throw json['message'];
+        snack(json['message']);
       }
     } catch (e) {
       snack("Gagal upload: $e");
@@ -167,19 +200,10 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
             ElevatedButton.icon(
               icon: const Icon(Icons.attach_file),
               label: Text(
-                fileSurat == null
-                    ? "Pilih File Surat"
-                    : fileSurat!.path.split('/').last,
+                fileName ?? "Pilih File Surat",
+                overflow: TextOverflow.ellipsis,
               ),
-              onPressed: () async {
-                final res = await FilePicker.platform.pickFiles(
-                  type: FileType.custom,
-                  allowedExtensions: ['pdf', 'doc', 'docx'],
-                );
-                if (res != null) {
-                  setState(() => fileSurat = File(res.files.single.path!));
-                }
-              },
+              onPressed: pickFile,
             ),
             const SizedBox(height: 30),
 
