@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../core/konstan.dart';
-import '../cuti/verif_cuti.dart';
+import 'verif_cuti.dart';
 
 class ListApprovedCutiPage extends StatefulWidget {
   final String kdPeg;

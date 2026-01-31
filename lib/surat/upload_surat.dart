@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/konstan.dart';
+import 'list_surat.dart';
 
 class UploadSuratPage extends StatefulWidget {
   final String kdPeg;
@@ -135,7 +136,13 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
 
       if (json['status'] == true) {
         snack(json['message']);
-        Navigator.pop(context, true);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ListSuratPage(kdPeg: widget.kdPeg),
+          ),
+        );
       } else {
         snack(json['message']);
       }
@@ -147,7 +154,9 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
   }
 
   void snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
   }
 
   @override

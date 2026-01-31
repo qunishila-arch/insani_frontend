@@ -3,6 +3,7 @@ import '../widgets/profile.dart';
 import '../surat/upload_surat.dart';
 import '../cuti/order_cuti.dart';
 import '../cuti/list_order_cuti.dart';
+import '../surat/list_surat.dart';
 
 class TuHome extends StatelessWidget {
   final String kdPeg;
@@ -14,32 +15,36 @@ class TuHome extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: Row(
                 children: [
-                  Image.asset('assets/logorsi.png', height: 40),
-                  const SizedBox(width: 10),
-                  const Expanded(child: SizedBox()),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProfilePage(kdPeg: kdPeg),
-                        ),
-                      );
-                    },
-                    child: const CircleAvatar(
-                      backgroundColor: Colors.grey,
-                      child: Icon(Icons.person, color: Colors.white),
+                    Image.asset('assets/logorsi.png', height: 40),
+                    const SizedBox(width: 10),
+                    const Expanded(child: SizedBox()),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProfilePage(kdPeg: kdPeg),
+                          ),
+                        );
+                      },
+                      child: const CircleAvatar(
+                        backgroundColor: Colors.grey,
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
             Image.asset(
               'assets/rsi.jpeg',
@@ -50,71 +55,85 @@ class TuHome extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Column(
-                children: [
-                  _menuButton(
-                    icon: Icons.edit_document,
-                    title: 'Order Cuti',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => OrderCutiPage(kdPeg: kdPeg),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  _menuButton(
-                    icon: Icons.list_alt,
-                    title: 'List Order Cuti',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ListOrderCutiPage(kdPeg: kdPeg),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Column(
+                  children: [
+                    _menuButton(
+                      icon: Icons.edit_document,
+                      title: 'Order Cuti',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => OrderCutiPage(kdPeg: kdPeg),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    _menuButton(
+                      icon: Icons.list_alt,
+                      title: 'List Order Cuti',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ListOrderCutiPage(kdPeg: kdPeg),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
+
+              const SizedBox(height: 30),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Column(
+                  children: [
+                    _menuButton(
+                      icon: Icons.upload_file,
+                      title: 'Upload Surat',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => UploadSuratPage(kdPeg: kdPeg),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    _menuButton(
+                      icon: Icons.description,
+                      title: 'List Surat',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ListSuratPage(kdPeg: kdPeg),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
 
             const SizedBox(height: 30),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Column(
-                children: [
-                  _menuButton(
-                    icon: Icons.upload_file,
-                    title: 'Upload Surat',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => UploadSuratPage(kdPeg: kdPeg),
-                        ),
-                      );
-                    },
-                  ),
-                ],
+              const Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: Text(
+                  '© RSI Wonosobo 2025',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ),
-            ),
-
-            const Spacer(),
-
-            const Padding(
-              padding: EdgeInsets.only(bottom: 10),
-              child: Text(
-                '© RSI Wonosobo 2025',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
