@@ -1,4 +1,5 @@
 const String baseUrl = "http://192.168.225.87/insani/API/";
+const String baseFileUrl = "http://192.168.225.87/insani/uploads/surat/";
 
 const String loginUrl = baseUrl + "login.php";
 const String registerUrl = baseUrl + "register.php";

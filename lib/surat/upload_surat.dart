@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dropdown_search/dropdown_search.dart';
 
 import '../core/konstan.dart';
 import 'list_surat.dart';
@@ -140,7 +141,7 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => ListSuratPage(kdPeg: widget.kdPeg),
+            builder: (_) => ListSuratPage(kdPeg: widget.kdPeg)
           ),
         );
       } else {
@@ -154,9 +155,7 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
   }
 
   void snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -188,22 +187,37 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
 
             loadingPegawai
                 ? const Center(child: CircularProgressIndicator())
-                : DropdownButtonFormField<String>(
-                    value: selectedPeg,
-                    decoration: const InputDecoration(
-                      labelText: "Ditujukan Untuk",
-                      border: OutlineInputBorder(),
+                : DropdownSearch<Map<String, String>>(
+                    items: daftarPegawai,
+                    selectedItem: daftarPegawai.firstWhere(
+                      (e) => e['kd_peg'] == selectedPeg,
+                      orElse: () => daftarPegawai.first,
                     ),
-                    items: daftarPegawai
-                        .map(
-                          (e) => DropdownMenuItem(
-                            value: e['kd_peg'],
-                            child: Text(e['nama']!),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (v) => setState(() => selectedPeg = v!),
+                    itemAsString: (item) => item['nama']!,
+                    popupProps: PopupProps.menu(
+                      showSearchBox: true,
+                      searchFieldProps: TextFieldProps(
+                        decoration: InputDecoration(
+                          hintText: "Cari nama pegawai",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    dropdownDecoratorProps: DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        labelText: "Ditujukan Untuk",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedPeg = value['kd_peg']!;
+                        });
+                      }
+                    },
                   ),
+
             const SizedBox(height: 16),
 
             ElevatedButton.icon(
