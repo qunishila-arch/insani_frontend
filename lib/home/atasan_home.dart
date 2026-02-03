@@ -3,6 +3,7 @@ import '../cuti/order_cuti.dart';
 import '../cuti/list_order_cuti.dart';
 import '../cuti/approve_cuti.dart';
 import '../widgets/profile.dart';
+import '../surat/list_surat.dart';
 
 class AtasanHome extends StatelessWidget {
   final String kdPeg;
@@ -126,7 +127,14 @@ class AtasanHome extends StatelessWidget {
                     _menuButton(
                       icon: Icons.bookmark_border,
                       title: 'Surat',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ListSuratPage(kdPeg: kdPeg),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

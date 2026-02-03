@@ -25,7 +25,7 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
   bool loading = false;
   bool loadingPegawai = true;
 
-  String selectedPeg = '-1';
+  List<String> selectedPegList = ['-1'];
 
   Uint8List? fileBytes;
   String? fileName;
@@ -72,7 +72,7 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
       } else {
         loadingPegawai = false;
       }
-    } catch (_) {
+    } catch (e) {
       loadingPegawai = false;
     }
   }
@@ -121,7 +121,7 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
 
       request.fields['username'] = username;
       request.fields['judul_surat'] = judulController.text.trim();
-      request.fields['id_ditujukan_ke'] = selectedPeg;
+      request.fields['id_ditujukan_ke'] = jsonEncode(selectedPegList);
 
       request.files.add(
         http.MultipartFile.fromBytes(
@@ -140,9 +140,7 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => ListSuratPage(kdPeg: widget.kdPeg)
-          ),
+          MaterialPageRoute(builder: (_) => ListSuratPage(kdPeg: widget.kdPeg)),
         );
       } else {
         snack(json['message']);
@@ -187,34 +185,31 @@ class _UploadSuratPageState extends State<UploadSuratPage> {
 
             loadingPegawai
                 ? const Center(child: CircularProgressIndicator())
-                : DropdownSearch<Map<String, String>>(
+                : DropdownSearch<Map<String, String>>.multiSelection(
                     items: daftarPegawai,
-                    selectedItem: daftarPegawai.firstWhere(
-                      (e) => e['kd_peg'] == selectedPeg,
-                      orElse: () => daftarPegawai.first,
-                    ),
+                    selectedItems: daftarPegawai
+                        .where((e) => selectedPegList.contains(e['kd_peg']))
+                        .toList(),
                     itemAsString: (item) => item['nama']!,
-                    popupProps: PopupProps.menu(
+                    popupProps: PopupPropsMultiSelection.menu(
                       showSearchBox: true,
-                      searchFieldProps: TextFieldProps(
-                        decoration: InputDecoration(
-                          hintText: "Cari nama pegawai",
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
                     ),
                     dropdownDecoratorProps: DropDownDecoratorProps(
-                      dropdownSearchDecoration: InputDecoration(
+                      dropdownSearchDecoration: const InputDecoration(
                         labelText: "Ditujukan Untuk",
                         border: OutlineInputBorder(),
                       ),
                     ),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          selectedPeg = value['kd_peg']!;
-                        });
-                      }
+                    onChanged: (values) {
+                      setState(() {
+                        if (values.any((e) => e['kd_peg'] == '-1')) {
+                          selectedPegList = ['-1'];
+                        } else {
+                          selectedPegList = values
+                              .map((e) => e['kd_peg']!)
+                              .toList();
+                        }
+                      });
                     },
                   ),
 
