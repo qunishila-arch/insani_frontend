@@ -9,3 +9,4 @@ const String profileUrl = baseUrl + "profile.php";
 const String hrdUrl = baseUrl + "hrd.php";
 const String tataUsahaUrl = baseUrl + "tata_usaha.php";
 const String listSuratUrl = baseUrl + "list_surat.php";
+const String pengumumanUrl = baseUrl + "list_pengumuman.php";

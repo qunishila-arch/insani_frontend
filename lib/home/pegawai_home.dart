@@ -1,13 +1,53 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import '../core/konstan.dart';
 import '../cuti/order_cuti.dart';
 import '../cuti/list_order_cuti.dart';
 import '../widgets/profile.dart';
 import '../surat/list_surat.dart';
+import '../surat/detail_surat.dart';
 
-class PegawaiHome extends StatelessWidget {
+class PegawaiHome extends StatefulWidget {
   final String kdPeg;
 
   const PegawaiHome({super.key, required this.kdPeg});
+
+  @override
+  State<PegawaiHome> createState() => _PegawaiHomeState();
+}
+
+class _PegawaiHomeState extends State<PegawaiHome> {
+  bool loadingPengumuman = true;
+
+  Map<String, dynamic>? pengumuman;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPengumuman();
+  }
+
+  Future<void> fetchPengumuman() async {
+    try {
+      final res = await http.get(
+        Uri.parse("$baseUrl/list_surat.php?role=pegawai&kdPeg=${widget.kdPeg}"),
+      );
+
+      final jsonData = jsonDecode(res.body);
+
+      if (jsonData['status'] == true &&
+          jsonData['data'] != null &&
+          jsonData['data'].isNotEmpty) {
+        pengumuman = jsonData['data'][0];
+      }
+    } catch (e) {
+      debugPrint("ERROR FETCH PENGUMUMAN: $e");
+    }
+
+    setState(() => loadingPengumuman = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,13 +63,12 @@ class PegawaiHome extends StatelessWidget {
                   Image.asset('assets/logorsi.png', height: 40),
                   const SizedBox(width: 10),
                   const Expanded(child: SizedBox()),
-
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => ProfilePage(kdPeg: kdPeg),
+                          builder: (_) => ProfilePage(kdPeg: widget.kdPeg),
                         ),
                       );
                     },
@@ -53,29 +92,47 @@ class PegawaiHome extends StatelessWidget {
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade400,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Pengumuman',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+              child: InkWell(
+                onTap: () {
+                  if (pengumuman == null) return;
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DetailSuratPage(surat: pengumuman!),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade400,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Pengumuman',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      'Libur nasional tanggal 01 Juni 2025',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ],
+                      const SizedBox(height: 6),
+
+                      if (loadingPengumuman)
+                        const Text("Memuat pengumuman...")
+                      else if (pengumuman == null)
+                        const Text("Tidak ada pengumuman")
+                      else
+                        Text(
+                          pengumuman!['judul_surat'],
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -93,14 +150,12 @@ class PegawaiHome extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => OrderCutiPage(kdPeg: kdPeg),
+                          builder: (_) => OrderCutiPage(kdPeg: widget.kdPeg),
                         ),
                       );
                     },
                   ),
-
                   const SizedBox(height: 20),
-
                   _menuButton(
                     icon: Icons.list_alt,
                     title: 'List Cuti',
@@ -108,14 +163,13 @@ class PegawaiHome extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => ListOrderCutiPage(kdPeg: kdPeg),
+                          builder: (_) =>
+                              ListOrderCutiPage(kdPeg: widget.kdPeg),
                         ),
                       );
                     },
                   ),
-
                   const SizedBox(height: 20),
-
                   _menuButton(
                     icon: Icons.bookmark_border,
                     title: 'Surat',
@@ -123,7 +177,7 @@ class PegawaiHome extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => ListSuratPage(kdPeg: kdPeg),
+                          builder: (_) => ListSuratPage(kdPeg: widget.kdPeg),
                         ),
                       );
                     },
@@ -150,49 +204,28 @@ class PegawaiHome extends StatelessWidget {
   static Widget _menuButton({
     required IconData icon,
     required String title,
-    String? badge,
     required VoidCallback onTap,
   }) {
     return InkWell(
       onTap: onTap,
-      child: Stack(
-        children: [
-          Container(
-            height: 80,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.green),
-              borderRadius: BorderRadius.circular(14),
+      child: Container(
+        height: 80,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.green),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 30),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 30),
-                const SizedBox(width: 10),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (badge != null)
-            Positioned(
-              top: 8,
-              right: 12,
-              child: CircleAvatar(
-                radius: 12,
-                backgroundColor: Colors.red,
-                child: Text(
-                  badge,
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
-                ),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
