@@ -45,26 +45,19 @@ class _RegisterPageState extends State<RegisterPage> {
         final jsonRes = json.decode(response.body);
 
         if (jsonRes['status'] == true) {
-          setState(() {
-            daftarKaryawan = List<Map<String, String>>.from(
-              (jsonRes['data'] as List).map(
-                (item) => {
-                  "kd_peg": item['kd_peg'].toString(),
-                  "nama": item['nama'].toString(),
-                },
-              ),
-            );
-            isLoadingKaryawan = false;
-          });
-        } else {
-          isLoadingKaryawan = false;
+          daftarKaryawan = List<Map<String, String>>.from(
+            (jsonRes['data'] as List).map(
+              (item) => {
+                "kd_peg": item['kd_peg'].toString(),
+                "nama": item['nama'].toString(),
+              },
+            ),
+          );
         }
-      } else {
-        isLoadingKaryawan = false;
       }
-    } catch (e) {
-      isLoadingKaryawan = false;
-    }
+    } catch (_) {}
+
+    setState(() => isLoadingKaryawan = false);
   }
 
   Future<void> registerApi() async {
@@ -115,6 +108,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body: Stack(
         children: [
@@ -132,99 +126,102 @@ class _RegisterPageState extends State<RegisterPage> {
             top: 40,
             child: Image.asset('assets/logorsi.png', height: 75),
           ),
-          Center(
+          SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.only(top: 120),
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 30),
-                padding: const EdgeInsets.all(25),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.95),
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "REGISTER",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.only(top: 120, bottom: 30),
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 30),
+                  padding: const EdgeInsets.all(25),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.95),
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
                       ),
-                    ),
-                    const SizedBox(height: 25),
-
-                    _buildTextField("Username", usernameController),
-                    const SizedBox(height: 15),
-
-                    _buildPasswordField(),
-                    const SizedBox(height: 15),
-
-                    isLoadingKaryawan
-                        ? const CircularProgressIndicator()
-                        : _buildDropdownField(),
-
-                    const SizedBox(height: 25),
-
-                    SizedBox(
-                      width: 140,
-                      height: 45,
-                      child: ElevatedButton(
-                        onPressed: isLoading ? null : registerApi,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryGreen,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "REGISTER",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
                         ),
-                        child: isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : const Text(
-                                "SIGN UP",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
                       ),
-                    ),
+                      const SizedBox(height: 25),
 
-                    const SizedBox(height: 15),
+                      _buildTextField("Username", usernameController),
+                      const SizedBox(height: 15),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text("Sudah punya akun? "),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const LoginPage(),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            "Login",
-                            style: TextStyle(
-                              color: AppColors.primaryGreen,
-                              fontWeight: FontWeight.bold,
+                      _buildPasswordField(),
+                      const SizedBox(height: 15),
+
+                      isLoadingKaryawan
+                          ? const CircularProgressIndicator()
+                          : _buildDropdownField(),
+
+                      const SizedBox(height: 25),
+
+                      SizedBox(
+                        width: 140,
+                        height: 45,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : registerApi,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryGreen,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
+                          child: isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const Text(
+                                  "SIGN UP",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("Sudah punya akun? "),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginPage(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              "Login",
+                              style: TextStyle(
+                                color: AppColors.primaryGreen,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -8,6 +8,7 @@ import '../cuti/list_order_cuti.dart';
 import '../widgets/profile.dart';
 import '../surat/list_surat.dart';
 import '../surat/detail_surat.dart';
+import '../auth/login_page.dart'; 
 
 class PegawaiHome extends StatefulWidget {
   final String kdPeg;
@@ -57,12 +58,24 @@ class _PegawaiHomeState extends State<PegawaiHome> {
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
               child: Row(
                 children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      );
+                    },
+                  ),
+
                   Image.asset('assets/logorsi.png', height: 40),
                   const SizedBox(width: 10),
                   const Expanded(child: SizedBox()),
+
                   GestureDetector(
                     onTap: () {
                       Navigator.push(

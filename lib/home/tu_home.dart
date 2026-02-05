@@ -4,6 +4,7 @@ import '../surat/upload_surat.dart';
 import '../cuti/order_cuti.dart';
 import '../cuti/list_order_cuti.dart';
 import '../surat/list_surat.dart';
+import '../auth/login_page.dart';
 
 class TuHome extends StatelessWidget {
   final String kdPeg;
@@ -20,11 +21,21 @@ class TuHome extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
+                  horizontal: 8,
                   vertical: 12,
                 ),
                 child: Row(
-                children: [
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                          (route) => false,
+                        );
+                      },
+                    ),
                     Image.asset('assets/logorsi.png', height: 40),
                     const SizedBox(width: 10),
                     const Expanded(child: SizedBox()),
@@ -46,14 +57,14 @@ class TuHome extends StatelessWidget {
                 ),
               ),
 
-            Image.asset(
-              'assets/rsi.jpeg',
-              width: double.infinity,
-              height: 200,
-              fit: BoxFit.cover,
-            ),
+              Image.asset(
+                'assets/rsi.jpeg',
+                width: double.infinity,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
 
-            const SizedBox(height: 30),
+              const SizedBox(height: 30),
 
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -123,7 +134,7 @@ class TuHome extends StatelessWidget {
                 ),
               ),
 
-            const SizedBox(height: 30),
+              const SizedBox(height: 30),
 
               const Padding(
                 padding: EdgeInsets.only(bottom: 10),
